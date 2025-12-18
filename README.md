@@ -1,7 +1,7 @@
 # 基于卷积神经网络的恒星光谱分类：数据重制与训练策略优化带来的性能提升
 
 ## 摘要
-在保持模型结构轻量的前提下，我们对原始 Jupyter 笔记本实现（CNN.ipynb）进行了工程化重构（CNN.py），并针对旧数据集中类别不均衡与 F 型恒星识别偏弱的问题，从 LAMOST 重新采样构建了等量新数据集（A/B/F/G/K/M 各 2000 条，SNR≥10），统一转存为 .npy 以提升 IO 效率。实验表明：
+在保持模型结构轻量的前提下，我们对原代码进行了工程化重构（CNN.py），并针对旧数据集中类别不均衡与 F 型恒星识别偏弱的问题，从 LAMOST 重新采样构建了等量新数据集（A/B/F/G/K/M 各 2000 条，SNR≥10），统一转存为 .npy 以提升 IO 效率。实验表明：
 - 在旧数据（N=13924）上，测试准确率由 89.18% 提升至 91.84%，宏平均 F1 约提升 3.08 个百分点，其中 F 类 F1 从 75.52% 提升至 80.49%。
 - 在新数据（N=12000，类别均衡）上，测试准确率由 95.67% 提升至 96.56%，宏平均 F1 约提升 0.75 个百分点，其中 F 类 F1 从 91.67% 提升至 93.52%。
 - 推理耗时约提升 5×，主要来自更大的 batch 与评估管线优化。
@@ -60,7 +60,7 @@
 
 ### 5) 早停、数值稳定与推理加速
 - 早停 patience=6；梯度裁剪（max_norm=1.0）；
-- 将 batch_size 从 10 提升到 32（GPU 友好、吞吐更高）；
+- 将 batch_size 从 10 提升到 32；
 - 评估管线更简洁，显著降低 test_time。
 
 ---
@@ -121,14 +121,5 @@
 在保持模型结构基本不变的前提下，通过“3700 输入维度对齐 + 训练策略系统优化 + 类别均衡新数据”，在旧数据与新数据上均取得显著或稳定的性能提升，尤其强化了 F/G 等相邻谱型的区分能力，同时推理速度提升约 5×。后续可探索：基于物理先验的谱线增强、更细粒度子类标注、以及轻量 Transformer/ConvMixer 等结构的融合；并可引入校准（温度缩放）与不确定性评估，提升部署可用性。
 
 ---
-
-## 代码与复现
-- 代码仓库（含 Jupyter 笔记本与脚本版）：
-  - https://github.com/yatingZhu241/Star-spectral-classification
-- 脚本训练入口：
-  - `run_CNN_module(device, num_class, num_epochs, batch_size, learning_rate, train, test, clsTR, clsTE)`
-- 推荐配置（CNN.py）：
-  - num_class=6，num_epochs=30（含早停），batch_size=32，learning_rate=0.003；
-  - CrossEntropyLoss(weight=class_weights, label_smoothing=0.05)；
-  - SGD(momentum=0.9, nesterov=True, weight_decay=2e-4) + StepLR + SWA；
-  - 训练启用轻量 1D 增强，评估关闭。
+## 结论
+数据集在tree里面，要翻一下
